@@ -22,15 +22,7 @@ export const authService = {
       email: data.user.email!
     };
 
-    // Verificar se o email precisa ser confirmado
-    const needsConfirmation = !data.user.email_confirmed_at;
-
-    if (needsConfirmation) {
-      // Não tentar fazer login automático se precisa confirmar email
-      return { user, needsConfirmation: true };
-    }
-
-    // Se o email já está confirmado, tentar fazer login automático
+        // Tentar fazer login automático após cadastro
     try {
       const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
         email,
@@ -50,7 +42,7 @@ export const authService = {
       
     }
 
-    return { user, needsConfirmation };
+    return { user, needsConfirmation: false };
   },
 
   async signIn(email: string, password: string): Promise<User> {

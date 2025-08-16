@@ -39,7 +39,7 @@ const AuthFormMinimal: React.FC<AuthFormProps> = ({ onLogin, onSignUp }) => {
         setPassword('');
       } else {
         await onSignUp(email, password);
-        showMessage('Conta criada! Verifique seu email para confirmar e depois faça login.', 'success');
+        showMessage('Conta criada com sucesso! Você já está logado.', 'success');
         // Após cadastro, mudar para modo login mas manter email preenchido
         setIsLogin(true);
         setPassword('');
@@ -49,8 +49,7 @@ const AuthFormMinimal: React.FC<AuthFormProps> = ({ onLogin, onSignUp }) => {
       
       if (errorMsg.includes('Invalid login credentials')) {
         showMessage(`Email "${email}" ou senha incorretos. Se não tem conta, clique em "Cadastre-se".`, 'error');
-      } else if (errorMsg.includes('Email not confirmed')) {
-        showMessage(`Email "${email}" ainda não foi confirmado. Verifique sua caixa de entrada e spam.`, 'error');
+
       } else if (errorMsg.includes('User already registered')) {
         showMessage(`Email "${email}" já está cadastrado. Tente fazer login.`, 'error');
         setIsLogin(true);
@@ -97,7 +96,7 @@ const AuthFormMinimal: React.FC<AuthFormProps> = ({ onLogin, onSignUp }) => {
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                 <input
-                  type="email"
+                  type="text"
                   required
                   value={email}
                   onChange={(e) => {
@@ -105,7 +104,7 @@ const AuthFormMinimal: React.FC<AuthFormProps> = ({ onLogin, onSignUp }) => {
                     clearMessage(); // Limpar mensagens quando digitar
                   }}
                   className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-gray-500"
-                  placeholder="seu@email.com"
+                  placeholder="Digite seu email"
                 />
               </div>
             </div>

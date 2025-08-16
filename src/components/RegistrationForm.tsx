@@ -206,7 +206,7 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ onSubmit, existingR
                   E-mail
                 </label>
                 <input
-                  type="email"
+                  type="text"
                   required
                   value={formData.resident.email}
                   onChange={(e) => setFormData(prev => ({
@@ -214,7 +214,7 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ onSubmit, existingR
                     resident: { ...prev.resident, email: e.target.value }
                   }))}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-gray-500 transition-colors"
-                  placeholder="seu@email.com"
+                  placeholder="Digite seu email"
                 />
               </div>
             </div>

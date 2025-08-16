@@ -7,11 +7,11 @@ import MyPetsView from './components/MyPetsView';
 import AuthFormMinimal from './components/AuthFormMinimal';
 import UserHeader from './components/UserHeader';
 import MessageModal from './components/MessageModal';
-import EmailConfirmationModal from './components/EmailConfirmationModal';
+
 import ErrorBoundary from './components/ErrorBoundary';
 import { databaseService } from './services/database';
 import { authService } from './services/auth';
-import { supabase } from './lib/supabase';
+
 import { Pet, Resident, FormData, User } from './types';
 
 function App() {
@@ -33,13 +33,7 @@ function App() {
     type: 'info'
   });
   
-  const [emailConfirmationModal, setEmailConfirmationModal] = useState<{
-    isOpen: boolean;
-    email: string;
-  }>({
-    isOpen: false,
-    email: ''
-  });
+
 
   // Check authentication status on mount
   React.useEffect(() => {
@@ -61,7 +55,6 @@ function App() {
   const checkAuthStatus = async () => {
     try {
       // Limpar estados antes de verificar
-      setEmailConfirmationModal({ isOpen: false, email: '' });
       
       const currentUser = await authService.getCurrentUser();
       setUser(currentUser);
@@ -129,7 +122,6 @@ function App() {
       // Limpar estados anteriores antes do login
       setUser(null);
       setResident(null);
-      setEmailConfirmationModal({ isOpen: false, email: '' });
       
       const user = await authService.signIn(email, password);
       setUser(user);
@@ -144,20 +136,7 @@ function App() {
     try {
       const result = await authService.signUp(email, password);
       
-      if (result.needsConfirmation) {
-        // Limpar qualquer usuário anterior e mostrar modal de confirmação
-        setUser(null);
-        setResident(null);
-        setEmailConfirmationModal({
-          isOpen: true,
-          email
-        });
-        // Importante: fazer logout do Supabase para limpar sessão
-        await authService.signOut();
-        return;
-      }
-      
-      // Se o email já está confirmado, fazer login automático
+      // Login automático após cadastro
       setUser(result.user);
       await loadUserResident(result.user.id);
     } catch (error) {
@@ -183,16 +162,7 @@ function App() {
       return;
     }
 
-    // Verificar se o email foi confirmado
-    try {
-      const { data: { user: currentUser } } = await supabase.auth.getUser();
-      if (currentUser && !currentUser.email_confirmed_at) {
-        showMessage('E-mail Não Confirmado', 'Por favor, confirme seu e-mail antes de cadastrar pets. Verifique sua caixa de entrada e spam.', 'error');
-        return;
-      }
-    } catch (error) {
-      // Erro silencioso na verificação de email
-    }
+
 
     try {
       setLoading(true);
@@ -318,12 +288,7 @@ function App() {
           type={messageModal.type}
         />
 
-        {/* Email Confirmation Modal */}
-        <EmailConfirmationModal
-          isOpen={emailConfirmationModal.isOpen}
-          onClose={() => setEmailConfirmationModal(prev => ({ ...prev, isOpen: false }))}
-          email={emailConfirmationModal.email}
-        />
+
       </div>
     </ErrorBoundary>
   );

@@ -37,28 +37,12 @@ const AuthFormStable: React.FC<AuthFormProps> = ({ onLogin, onSignUp, onCheckEma
       console.error('Erro de autenticação:', error);
       
       if (error?.message?.includes('Invalid login credentials') && isLogin) {
-        // Para evitar rate limiting, assumir que credenciais inválidas = email não cadastrado
-        // se for um email com formato típico de teste
-        const isTestEmail = email.includes('teste') || email.includes('test') || 
-                           email.includes('exemplo') || email.includes('example') ||
-                           email.includes('demo') || !email.includes('@gmail.') && 
-                           !email.includes('@hotmail.') && !email.includes('@outlook.');
-        
-        if (isTestEmail) {
-          setErrorMessage('Este e-mail não está cadastrado em nosso sistema.');
-          setShowSignUpOption(true);
-        } else {
-          setErrorMessage('E-mail ou senha incorretos. Se não tem conta, cadastre-se.');
-          setShowSignUpOption(true);
-        }
-      } else if (error?.message?.includes('Email not confirmed')) {
-        setErrorMessage('Confirme seu e-mail antes de fazer login. Verifique sua caixa de entrada.');
+        setErrorMessage('E-mail ou senha incorretos. Se não tem conta, cadastre-se.');
+        setShowSignUpOption(true);
       } else if (error?.message?.includes('User already registered')) {
         setErrorMessage('Este e-mail já está cadastrado. Tente fazer login.');
       } else if (error?.message?.includes('Password should be at least')) {
         setErrorMessage('A senha deve ter pelo menos 6 caracteres.');
-      } else if (error?.message?.includes('Unable to validate email address')) {
-        setErrorMessage('Por favor, insira um endereço de e-mail válido.');
       } else if (error?.message?.includes('Too many requests') || error?.message?.includes('For security purposes')) {
         setErrorMessage('Muitas tentativas detectadas. Aguarde 1 minuto e tente novamente.');
       } else {
@@ -107,13 +91,13 @@ const AuthFormStable: React.FC<AuthFormProps> = ({ onLogin, onSignUp, onCheckEma
                 <input
                   id="email"
                   name="email"
-                  type="email"
+                  type="text"
                   autoComplete="email"
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-gray-500 transition-colors"
-                  placeholder="seu@email.com"
+                  placeholder="Digite seu email"
                 />
               </div>
             </div>

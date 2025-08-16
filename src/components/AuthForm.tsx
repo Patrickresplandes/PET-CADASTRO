@@ -75,18 +75,12 @@ const AuthForm: React.FC<AuthFormProps> = ({ onLogin, onSignUp, onCheckEmail }) 
             errorTitle = 'Credenciais Inválidas';
             errorMessage = 'E-mail ou senha incorretos. Verifique suas credenciais e tente novamente.';
           }
-        } else if (error.message.includes('Email not confirmed')) {
-          errorTitle = 'E-mail Não Confirmado';
-          errorMessage = 'Tente fazer login novamente. Se o problema persistir, entre em contato com o suporte.';
         } else if (error.message.includes('User already registered') || error.message.includes('already registered')) {
           errorTitle = 'Usuário Já Cadastrado';
           errorMessage = 'Este e-mail já está cadastrado. Tente fazer login ou use outro e-mail.';
         } else if (error.message.includes('Password should be at least') || error.message.includes('Password')) {
           errorTitle = 'Senha Muito Curta';
           errorMessage = 'A senha deve ter pelo menos 6 caracteres.';
-        } else if (error.message.includes('Unable to validate email address') || error.message.includes('Invalid email')) {
-          errorTitle = 'E-mail Inválido';
-          errorMessage = 'Por favor, insira um endereço de e-mail válido.';
         } else if (error.message.includes('Too many requests')) {
           errorTitle = 'Muitas Tentativas';
           errorMessage = 'Muitas tentativas de login. Aguarde alguns minutos e tente novamente.';
@@ -136,13 +130,13 @@ const AuthForm: React.FC<AuthFormProps> = ({ onLogin, onSignUp, onCheckEmail }) 
                   <input
                     id="email"
                     name="email"
-                    type="email"
+                    type="text"
                     autoComplete="email"
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-gray-500 transition-colors"
-                    placeholder="seu@email.com"
+                    placeholder="Digite seu email"
                   />
                 </div>
               </div>

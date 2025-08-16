@@ -10,6 +10,7 @@ import MessageModal from './components/MessageModal';
 import ErrorBoundary from './components/ErrorBoundary';
 import { databaseService } from './services/database';
 import { authService } from './services/auth';
+import { supabase } from './lib/supabase';
 import { Pet, Resident, FormData, User } from './types';
 
 function App() {
@@ -80,18 +81,32 @@ function App() {
     });
   };
 
-  // Load pets on component mount
+  // Load pets on component mount and when user changes
   React.useEffect(() => {
     if (user) {
       loadPets();
     }
   }, [user]);
 
+  // Recarregar pets quando mudar para a aba de pets
+  React.useEffect(() => {
+    if (user && activeTab === 'pets') {
+      loadPets();
+    }
+  }, [user, activeTab]);
+
   const loadPets = async () => {
     try {
       setLoading(true);
-      const petsData = await databaseService.getPets();
-      setPets(petsData);
+      if (user) {
+        // Carregar pets do usuário logado
+        const petsData = await databaseService.getUserPets(user.id);
+        setPets(petsData);
+      } else {
+        // Carregar todos os pets (para a galeria)
+        const petsData = await databaseService.getPets();
+        setPets(petsData);
+      }
     } catch (error) {
       console.error('Erro ao carregar pets:', error);
       showMessage('Erro ao Carregar Pets', 'Erro ao carregar pets. Verifique sua conexão.', 'error');
@@ -140,6 +155,17 @@ function App() {
       return;
     }
 
+    // Verificar se o email foi confirmado
+    try {
+      const { data: { user: currentUser } } = await supabase.auth.getUser();
+      if (currentUser && !currentUser.email_confirmed_at) {
+        showMessage('E-mail Não Confirmado', 'Por favor, confirme seu e-mail antes de cadastrar pets. Verifique sua caixa de entrada e spam.', 'error');
+        return;
+      }
+    } catch (error) {
+      console.error('Erro ao verificar confirmação de email:', error);
+    }
+
     try {
       setLoading(true);
       
@@ -159,6 +185,9 @@ function App() {
       
       // Update local state
       setPets(prev => [pet, ...prev]);
+      
+      // Recarregar pets para garantir sincronização
+      await loadPets();
       
       // Show success message
       showMessage('Pet Cadastrado com Sucesso!', 'Pet cadastrado com sucesso!', 'success');

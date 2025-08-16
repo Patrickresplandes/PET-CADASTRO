@@ -69,15 +69,19 @@ export const databaseService = {
         throw new Error(`Erro ao buscar dados do morador: ${error.message}`);
       }
     
-    return {
-      id: data.id,
-      userId: data.user_id,
-      name: data.name,
-      apartment: data.apartment,
-      phone: data.phone,
-      email: data.email,
-      createdAt: data.created_at
-    };
+      return {
+        id: data.id,
+        userId: data.user_id,
+        name: data.name,
+        apartment: data.apartment,
+        phone: data.phone,
+        email: data.email,
+        createdAt: data.created_at
+      };
+    } catch (error) {
+      console.error('Erro inesperado ao buscar residente:', error);
+      return null;
+    }
   },
 
   // Pets

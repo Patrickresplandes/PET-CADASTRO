@@ -37,7 +37,7 @@ const PetCard: React.FC<PetCardProps> = ({ pet }) => {
         
         <div className="flex items-center text-sm text-gray-500 mb-3">
           <MapPin className="w-4 h-4 mr-1" />
-          <span>{pet.residentName} - Apt {pet.residentApartment}</span>
+          <span>{pet.residentName} - Bloco {pet.residentBlock}, Apt {pet.residentApartment}</span>
         </div>
         
         {pet.description && (

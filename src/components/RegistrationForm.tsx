@@ -14,6 +14,7 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ onSubmit, existingR
   const [formData, setFormData] = useState<FormData>({
     resident: {
       name: existingResident?.name || '',
+      block: existingResident?.block || '',
       apartment: existingResident?.apartment || '',
       phone: existingResident?.phone || '',
       email: existingResident?.email || ''
@@ -49,6 +50,7 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ onSubmit, existingR
         ...prev,
         resident: {
           name: existingResident.name,
+          block: existingResident.block,
           apartment: existingResident.apartment,
           phone: existingResident.phone,
           email: existingResident.email
@@ -145,18 +147,37 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ onSubmit, existingR
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Bloco
+                </label>
+                <input
+                  type="number"
+                  required
+                  min="1"
+                  value={formData.resident.block || ''}
+                  onChange={(e) => setFormData(prev => ({
+                    ...prev,
+                    resident: { ...prev.resident, block: e.target.value }
+                  }))}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-gray-500 transition-colors"
+                  placeholder="Ex: 1, 2, 3"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   Apartamento
                 </label>
                 <input
-                  type="text"
+                  type="number"
                   required
-                  value={formData.resident.apartment}
+                  min="1"
+                  value={formData.resident.apartment || ''}
                   onChange={(e) => setFormData(prev => ({
                     ...prev,
                     resident: { ...prev.resident, apartment: e.target.value }
                   }))}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-gray-500 transition-colors"
-                  placeholder="Ex: 101, 205B"
+                  placeholder="Ex: 101, 102, 201"
                 />
               </div>
 
@@ -205,7 +226,7 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ onSubmit, existingR
             <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
               <h3 className="text-sm font-medium text-gray-700 mb-2">Cadastrando para:</h3>
               <p className="text-gray-900 font-medium">{existingResident.name}</p>
-              <p className="text-gray-600 text-sm">Apartamento {existingResident.apartment}</p>
+              <p className="text-gray-600 text-sm">Bloco {existingResident.block}, Apartamento {existingResident.apartment}</p>
             </div>
           )}
 

@@ -2,6 +2,7 @@ export interface Resident {
   id: string;
   userId: string;
   name: string;
+  block: string;
   apartment: string;
   phone: string;
   email: string;
@@ -12,6 +13,7 @@ export interface Pet {
   id: string;
   residentId: string;
   residentName: string;
+  residentBlock: string;
   residentApartment: string;
   name: string;
   species: string;
@@ -24,7 +26,7 @@ export interface Pet {
 
 export interface FormData {
   resident: Omit<Resident, 'id' | 'userId' | 'createdAt'>;
-  pet: Omit<Pet, 'id' | 'residentId' | 'residentName' | 'residentApartment' | 'createdAt'>;
+  pet: Omit<Pet, 'id' | 'residentId' | 'residentName' | 'residentBlock' | 'residentApartment' | 'createdAt'>;
 }
 
 export interface User {

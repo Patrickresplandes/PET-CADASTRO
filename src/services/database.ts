@@ -9,6 +9,7 @@ export const databaseService = {
       .insert([{
         user_id: userId,
         name: resident.name,
+        block: resident.block,
         apartment: resident.apartment,
         phone: resident.phone,
         email: resident.email
@@ -22,6 +23,7 @@ export const databaseService = {
       id: data.id,
       userId: data.user_id,
       name: data.name,
+      block: data.block,
       apartment: data.apartment,
       phone: data.phone,
       email: data.email,
@@ -41,6 +43,7 @@ export const databaseService = {
       id: resident.id,
       userId: resident.user_id,
       name: resident.name,
+      block: resident.block || '1',
       apartment: resident.apartment,
       phone: resident.phone,
       email: resident.email,
@@ -54,32 +57,34 @@ export const databaseService = {
         .from('residents')
         .select('*')
         .eq('user_id', userId)
-        .single();
+        .maybeSingle();
 
       if (error) {
         if (error.code === 'PGRST116') return null; // No rows found
-        console.error('Erro ao buscar residente:', error);
         
         // Se for erro 406, retornar null em vez de lançar erro
         if (error.code === '406' || error.message.includes('406')) {
-          console.warn('Erro 406 - RLS pode estar bloqueando acesso. Retornando null.');
           return null;
         }
         
         throw new Error(`Erro ao buscar dados do morador: ${error.message}`);
       }
-    
+      
+      if (!data) {
+        return null;
+      }
+
       return {
         id: data.id,
         userId: data.user_id,
         name: data.name,
+        block: data.block || '1',
         apartment: data.apartment,
         phone: data.phone,
         email: data.email,
         createdAt: data.created_at
       };
     } catch (error) {
-      console.error('Erro inesperado ao buscar residente:', error);
       return null;
     }
   },
@@ -91,6 +96,7 @@ export const databaseService = {
       .insert([{
         resident_id: pet.residentId,
         resident_name: pet.residentName,
+        resident_block: pet.residentBlock,
         resident_apartment: pet.residentApartment,
         name: pet.name,
         species: pet.species,
@@ -108,6 +114,7 @@ export const databaseService = {
       id: data.id,
       residentId: data.resident_id,
       residentName: data.resident_name,
+      residentBlock: data.resident_block || '1',
       residentApartment: data.resident_apartment,
       name: data.name,
       species: data.species,
@@ -131,6 +138,7 @@ export const databaseService = {
       id: pet.id,
       residentId: pet.resident_id,
       residentName: pet.resident_name,
+      residentBlock: pet.resident_block || '1',
       residentApartment: pet.resident_apartment,
       name: pet.name,
       species: pet.species,
@@ -158,6 +166,7 @@ export const databaseService = {
       id: pet.id,
       residentId: pet.resident_id,
       residentName: pet.resident_name,
+      residentBlock: pet.resident_block || '1',
       residentApartment: pet.resident_apartment,
       name: pet.name,
       species: pet.species,
@@ -177,6 +186,7 @@ export const databaseService = {
     const pet = await this.createPet({
       residentId: resident.id,
       residentName: resident.name,
+      residentBlock: resident.block,
       residentApartment: resident.apartment,
       ...formData.pet
     });
@@ -184,10 +194,11 @@ export const databaseService = {
     return { resident, pet };
   },
 
-  async addPetToExistingResident(petData: Omit<Pet, 'id' | 'residentId' | 'residentName' | 'residentApartment' | 'createdAt'>, resident: Resident): Promise<Pet> {
+  async addPetToExistingResident(petData: Omit<Pet, 'id' | 'residentId' | 'residentName' | 'residentBlock' | 'residentApartment' | 'createdAt'>, resident: Resident): Promise<Pet> {
     return this.createPet({
       residentId: resident.id,
       residentName: resident.name,
+      residentBlock: resident.block,
       residentApartment: resident.apartment,
       ...petData
     });

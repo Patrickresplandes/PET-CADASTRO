@@ -4,9 +4,10 @@ import Navigation from './components/Navigation';
 import RegistrationForm from './components/RegistrationForm';
 import PetGallery from './components/PetGallery';
 import MyPetsView from './components/MyPetsView';
-import AuthForm from './components/AuthForm';
+import AuthFormMinimal from './components/AuthFormMinimal';
 import UserHeader from './components/UserHeader';
 import MessageModal from './components/MessageModal';
+import EmailConfirmationModal from './components/EmailConfirmationModal';
 import ErrorBoundary from './components/ErrorBoundary';
 import { databaseService } from './services/database';
 import { authService } from './services/auth';
@@ -31,6 +32,14 @@ function App() {
     message: '',
     type: 'info'
   });
+  
+  const [emailConfirmationModal, setEmailConfirmationModal] = useState<{
+    isOpen: boolean;
+    email: string;
+  }>({
+    isOpen: false,
+    email: ''
+  });
 
   // Check authentication status on mount
   React.useEffect(() => {
@@ -51,6 +60,9 @@ function App() {
 
   const checkAuthStatus = async () => {
     try {
+      // Limpar estados antes de verificar
+      setEmailConfirmationModal({ isOpen: false, email: '' });
+      
       const currentUser = await authService.getCurrentUser();
       setUser(currentUser);
       if (currentUser) {
@@ -58,6 +70,9 @@ function App() {
       }
     } catch (error) {
       console.error('Erro ao verificar autenticação:', error);
+      // Limpar tudo em caso de erro
+      setUser(null);
+      setResident(null);
     } finally {
       setAuthLoading(false);
     }
@@ -115,8 +130,22 @@ function App() {
     }
   };
 
+  const handleCheckEmail = async (email: string): Promise<boolean> => {
+    try {
+      return await authService.checkEmailExists(email);
+    } catch (error) {
+      console.error('Erro ao verificar email:', error);
+      return true; // Em caso de erro, assumimos que o email pode existir
+    }
+  };
+
   const handleLogin = async (email: string, password: string) => {
     try {
+      // Limpar estados anteriores antes do login
+      setUser(null);
+      setResident(null);
+      setEmailConfirmationModal({ isOpen: false, email: '' });
+      
       const user = await authService.signIn(email, password);
       setUser(user);
       await loadUserResident(user.id);
@@ -125,12 +154,28 @@ function App() {
       throw error;
     }
   };
+  
 
   const handleSignUp = async (email: string, password: string) => {
     try {
-      const user = await authService.signUp(email, password);
-      setUser(user);
-      // Sucesso no cadastro - o usuário será redirecionado automaticamente
+      const result = await authService.signUp(email, password);
+      
+      if (result.needsConfirmation) {
+        // Limpar qualquer usuário anterior e mostrar modal de confirmação
+        setUser(null);
+        setResident(null);
+        setEmailConfirmationModal({
+          isOpen: true,
+          email
+        });
+        // Importante: fazer logout do Supabase para limpar sessão
+        await authService.signOut();
+        return;
+      }
+      
+      // Se o email já está confirmado, fazer login automático
+      setUser(result.user);
+      await loadUserResident(result.user.id);
     } catch (error) {
       console.error('Erro no cadastro:', error);
       throw error;
@@ -215,7 +260,7 @@ function App() {
   if (!user) {
     return (
       <ErrorBoundary>
-        <AuthForm onLogin={handleLogin} onSignUp={handleSignUp} />
+        <AuthFormMinimal onLogin={handleLogin} onSignUp={handleSignUp} />
       </ErrorBoundary>
     );
   }
@@ -289,6 +334,13 @@ function App() {
           title={messageModal.title}
           message={messageModal.message}
           type={messageModal.type}
+        />
+
+        {/* Email Confirmation Modal */}
+        <EmailConfirmationModal
+          isOpen={emailConfirmationModal.isOpen}
+          onClose={() => setEmailConfirmationModal(prev => ({ ...prev, isOpen: false }))}
+          email={emailConfirmationModal.email}
         />
       </div>
     </ErrorBoundary>

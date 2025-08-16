@@ -9,7 +9,7 @@ interface AuthFormProps {
   onCheckEmail?: (email: string) => Promise<boolean>;
 }
 
-const AuthForm: React.FC<AuthFormProps> = ({ onLogin, onSignUp, onCheckEmail }) => {
+const AuthFormSimple: React.FC<AuthFormProps> = ({ onLogin, onSignUp, onCheckEmail }) => {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -18,24 +18,29 @@ const AuthForm: React.FC<AuthFormProps> = ({ onLogin, onSignUp, onCheckEmail }) 
   const [allowSignUp, setAllowSignUp] = useState(false);
   const [success, setSuccess] = useState<{ title: string; message: string } | null>(null);
 
-  const handleCloseError = React.useCallback(() => {
-    setError(null);
-  }, []);
-
-  const handleCloseSuccess = React.useCallback(() => {
-    setSuccess(null);
-  }, []);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    // Prevent double submission
-    if (isSubmitting) return;
-
-    // Reset states before starting
+  const resetStates = () => {
     setError(null);
     setSuccess(null);
     setAllowSignUp(false);
+  };
+
+  const handleModeSwitch = () => {
+    if (!isSubmitting) {
+      setIsLogin(!isLogin);
+      resetStates();
+    }
+  };
+
+  const handleModalSignUp = () => {
+    setIsLogin(false);
+    resetStates();
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (isSubmitting) return;
+
+    resetStates();
     setIsSubmitting(true);
 
     try {
@@ -43,31 +48,28 @@ const AuthForm: React.FC<AuthFormProps> = ({ onLogin, onSignUp, onCheckEmail }) 
         await onLogin(email, password);
       } else {
         await onSignUp(email, password);
-        // O sucesso será tratado no App.tsx baseado na necessidade de confirmação
       }
     } catch (error: any) {
       console.error('Erro de autenticação:', error);
 
-      // Definir mensagens de erro específicas baseadas no tipo de erro
       let errorTitle = 'Erro de Autenticação';
       let errorMessage = 'Ocorreu um erro inesperado. Tente novamente.';
+      let shouldAllowSignUp = false;
 
       if (error?.message) {
         if (error.message.includes('Invalid login credentials')) {
-          // Para credenciais inválidas, verificar se o email existe
           if (isLogin && onCheckEmail) {
             try {
               const emailExists = await onCheckEmail(email);
               if (!emailExists) {
                 errorTitle = 'E-mail não cadastrado';
                 errorMessage = 'Este e-mail não está registrado em nosso sistema. Deseja criar uma conta?';
-                setAllowSignUp(true);
+                shouldAllowSignUp = true;
               } else {
                 errorTitle = 'Senha Incorreta';
                 errorMessage = 'A senha está incorreta. Verifique e tente novamente.';
               }
             } catch (checkError) {
-              // Se a verificação falhar, assumir que é problema de senha
               errorTitle = 'Credenciais Inválidas';
               errorMessage = 'E-mail ou senha incorretos. Verifique suas credenciais e tente novamente.';
             }
@@ -78,32 +80,26 @@ const AuthForm: React.FC<AuthFormProps> = ({ onLogin, onSignUp, onCheckEmail }) 
         } else if (error.message.includes('Email not confirmed')) {
           errorTitle = 'E-mail Não Confirmado';
           errorMessage = 'Tente fazer login novamente. Se o problema persistir, entre em contato com o suporte.';
-        } else if (error.message.includes('User already registered') || error.message.includes('already registered')) {
+        } else if (error.message.includes('User already registered')) {
           errorTitle = 'Usuário Já Cadastrado';
           errorMessage = 'Este e-mail já está cadastrado. Tente fazer login ou use outro e-mail.';
-        } else if (error.message.includes('Password should be at least') || error.message.includes('Password')) {
+        } else if (error.message.includes('Password should be at least')) {
           errorTitle = 'Senha Muito Curta';
           errorMessage = 'A senha deve ter pelo menos 6 caracteres.';
-        } else if (error.message.includes('Unable to validate email address') || error.message.includes('Invalid email')) {
+        } else if (error.message.includes('Unable to validate email address')) {
           errorTitle = 'E-mail Inválido';
           errorMessage = 'Por favor, insira um endereço de e-mail válido.';
         } else if (error.message.includes('Too many requests')) {
           errorTitle = 'Muitas Tentativas';
           errorMessage = 'Muitas tentativas de login. Aguarde alguns minutos e tente novamente.';
-        } else if (error.message.includes('Network') || error.message.includes('406')) {
+        } else if (error.message.includes('Network')) {
           errorTitle = 'Erro de Conexão';
           errorMessage = 'Erro de conexão com o servidor. Verifique sua internet e tente novamente.';
-        } else if (error.message.includes('403') || error.message.includes('401')) {
-          errorTitle = 'Acesso Negado';
-          errorMessage = 'Você não tem permissão para acessar este recurso.';
-        } else if (error.message.includes('User not found')) {
-          errorTitle = 'E-mail não cadastrado';
-          errorMessage = 'Este e-mail não está registrado. Deseja criar uma conta?';
-          setAllowSignUp(true);
         }
       }
 
       setError({ title: errorTitle, message: errorMessage });
+      setAllowSignUp(shouldAllowSignUp);
     } finally {
       setIsSubmitting(false);
     }
@@ -192,13 +188,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ onLogin, onSignUp, onCheckEmail }) 
             <div className="text-center">
               <button
                 type="button"
-                onClick={() => {
-                  if (!isSubmitting) {
-                    setIsLogin(!isLogin);
-                    setError(null);
-                    setAllowSignUp(false);
-                  }
-                }}
+                onClick={handleModeSwitch}
                 disabled={isSubmitting}
                 className="text-sm text-gray-600 hover:text-gray-900 transition-colors disabled:opacity-50"
               >
@@ -209,29 +199,27 @@ const AuthForm: React.FC<AuthFormProps> = ({ onLogin, onSignUp, onCheckEmail }) 
         </div>
       </div>
 
-      {/* Error Modal */}
-      <ErrorModal
-        isOpen={!!error}
-        onClose={handleCloseError}
-        title={error?.title || ''}
-        message={error?.message || ''}
-        allowSignUp={allowSignUp} 
-        onSignUp={() => {
-          setIsLogin(false); 
-          setAllowSignUp(false);
-          setError(null);
-        }}
-      />
+      {error && (
+        <ErrorModal
+          isOpen={true}
+          onClose={() => setError(null)}
+          title={error.title}
+          message={error.message}
+          allowSignUp={allowSignUp}
+          onSignUp={handleModalSignUp}
+        />
+      )}
 
-      {/* Success Modal */}
-      <SuccessModal
-        isOpen={!!success}
-        onClose={handleCloseSuccess}
-        title={success?.title || ''}
-        message={success?.message || ''}
-      />
+      {success && (
+        <SuccessModal
+          isOpen={true}
+          onClose={() => setSuccess(null)}
+          title={success.title}
+          message={success.message}
+        />
+      )}
     </>
   );
 };
 
-export default AuthForm;
+export default AuthFormSimple;

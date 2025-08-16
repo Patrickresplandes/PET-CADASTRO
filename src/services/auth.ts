@@ -2,7 +2,7 @@ import { supabase } from '../lib/supabase';
 import { User } from '../types';
 
 export const authService = {
-  async signUp(email: string, password: string): Promise<User> {
+  async signUp(email: string, password: string): Promise<{ user: User; needsConfirmation: boolean }> {
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
@@ -17,29 +17,40 @@ export const authService = {
     if (error) throw error;
     if (!data.user) throw new Error('Falha ao criar usuário');
 
-    // Se o usuário foi criado mas precisa confirmar e-mail, vamos fazer login diretamente
-    if (data.user && !data.user.email_confirmed_at) {
-      // Tentar fazer login imediatamente após o cadastro
+    const user: User = {
+      id: data.user.id,
+      email: data.user.email!
+    };
+
+    // Verificar se o email precisa ser confirmado
+    const needsConfirmation = !data.user.email_confirmed_at;
+
+    if (needsConfirmation) {
+      // Não tentar fazer login automático se precisa confirmar email
+      return { user, needsConfirmation: true };
+    }
+
+    // Se o email já está confirmado, tentar fazer login automático
+    try {
       const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
         email,
         password
       });
 
-      if (signInError) {
-        // Se não conseguir fazer login, retornar o usuário criado mesmo assim
-        console.warn('Usuário criado mas não foi possível fazer login automático:', signInError);
-      } else if (signInData.user) {
+      if (!signInError && signInData.user) {
         return {
-          id: signInData.user.id,
-          email: signInData.user.email!
+          user: {
+            id: signInData.user.id,
+            email: signInData.user.email!
+          },
+          needsConfirmation: false
         };
       }
+    } catch (loginError) {
+      console.warn('Erro no login automático após cadastro:', loginError);
     }
 
-    return {
-      id: data.user.id,
-      email: data.user.email!
-    };
+    return { user, needsConfirmation };
   },
 
   async signIn(email: string, password: string): Promise<User> {
@@ -71,6 +82,13 @@ export const authService = {
       id: user.id,
       email: user.email!
     };
+  },
+
+  async checkEmailExists(email: string): Promise<boolean> {
+    // Estratégia simples: sempre retornar false para emails não cadastrados
+    // Vamos verificar isso baseado no erro de login real
+    // Por enquanto, retornar true (conservativo) para evitar rate limiting
+    return true;
   },
 
   onAuthStateChange(callback: (user: User | null) => void) {

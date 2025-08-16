@@ -16,13 +16,13 @@ const AuthForm: React.FC<AuthFormProps> = ({ onLogin, onSignUp }) => {
   const [error, setError] = useState<{ title: string; message: string } | null>(null);
   const [success, setSuccess] = useState<{ title: string; message: string } | null>(null);
 
-  const handleCloseError = () => {
+  const handleCloseError = React.useCallback(() => {
     setError(null);
-  };
+  }, []);
 
-  const handleCloseSuccess = () => {
+  const handleCloseSuccess = React.useCallback(() => {
     setSuccess(null);
-  };
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

@@ -7,7 +7,10 @@ export const authService = {
       email,
       password,
       options: {
-        emailRedirectTo: undefined
+        emailRedirectTo: undefined,
+        data: {
+          app_name: 'PET-CADASTRO'
+        }
       }
     });
 

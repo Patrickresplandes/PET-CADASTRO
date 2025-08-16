@@ -55,7 +55,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ onLogin, onSignUp }) => {
           errorMessage = 'E-mail ou senha incorretos. Verifique suas credenciais e tente novamente.';
         } else if (error.message.includes('Email not confirmed')) {
           errorTitle = 'E-mail Não Confirmado';
-          errorMessage = 'Por favor, confirme seu e-mail antes de fazer login. Verifique sua caixa de entrada e spam. Se você acabou de se cadastrar, pode tentar fazer login novamente.';
+          errorMessage = 'Tente fazer login novamente. Se o problema persistir, entre em contato com o suporte.';
         } else if (error.message.includes('User already registered') || error.message.includes('already registered')) {
           errorTitle = 'Usuário Já Cadastrado';
           errorMessage = 'Este e-mail já está cadastrado. Tente fazer login ou use outro e-mail.';

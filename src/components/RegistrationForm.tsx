@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { Upload, X, User, MapPin, Phone, Mail, Heart } from 'lucide-react';
+import { Upload, X, User, Heart } from 'lucide-react';
 import { FormData, Resident } from '../types';
-import { convertToBase64, compressImage } from '../utils/imageUtils';
-import { formatPhone, unformatPhone } from '../utils/phoneMask';
+import { compressImage } from '../utils/imageUtils';
+import { formatPhone } from '../utils/phoneMask';
 import MessageModal from './MessageModal';
 
 interface RegistrationFormProps {
@@ -70,7 +70,6 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ onSubmit, existingR
           pet: { ...prev.pet, photo: compressedImage }
         }));
       } catch (error) {
-        console.error('Erro ao processar imagem:', error);
         setMessageModal({
           isOpen: true,
           title: 'Erro ao Processar Imagem',
@@ -103,7 +102,7 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ onSubmit, existingR
       }));
       setImagePreview('');
     } catch (error) {
-      console.error('Erro ao cadastrar:', error);
+      // Erro tratado pelo componente pai
     } finally {
       setIsSubmitting(false);
     }

@@ -69,7 +69,6 @@ function App() {
         await loadUserResident(currentUser.id);
       }
     } catch (error) {
-      console.error('Erro ao verificar autenticação:', error);
       // Limpar tudo em caso de erro
       setUser(null);
       setResident(null);
@@ -83,7 +82,7 @@ function App() {
       const userResident = await databaseService.getUserResident(userId);
       setResident(userResident);
     } catch (error) {
-      console.error('Erro ao carregar dados do morador:', error);
+      // Erro silencioso para não interromper o fluxo
     }
   };
 
@@ -113,31 +112,17 @@ function App() {
   const loadPets = async () => {
     try {
       setLoading(true);
-      if (user) {
-        // Carregar pets do usuário logado
-        const petsData = await databaseService.getUserPets(user.id);
-        setPets(petsData);
-      } else {
-        // Carregar todos os pets (para a galeria)
-        const petsData = await databaseService.getPets();
-        setPets(petsData);
-      }
+      // Carregar todos os pets para a galeria (aba "pets")
+      const petsData = await databaseService.getPets();
+      setPets(petsData);
     } catch (error) {
-      console.error('Erro ao carregar pets:', error);
       showMessage('Erro ao Carregar Pets', 'Erro ao carregar pets. Verifique sua conexão.', 'error');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleCheckEmail = async (email: string): Promise<boolean> => {
-    try {
-      return await authService.checkEmailExists(email);
-    } catch (error) {
-      console.error('Erro ao verificar email:', error);
-      return true; // Em caso de erro, assumimos que o email pode existir
-    }
-  };
+
 
   const handleLogin = async (email: string, password: string) => {
     try {
@@ -150,7 +135,6 @@ function App() {
       setUser(user);
       await loadUserResident(user.id);
     } catch (error) {
-      console.error('Erro no login:', error);
       throw error;
     }
   };
@@ -177,7 +161,6 @@ function App() {
       setUser(result.user);
       await loadUserResident(result.user.id);
     } catch (error) {
-      console.error('Erro no cadastro:', error);
       throw error;
     }
   };
@@ -190,7 +173,7 @@ function App() {
       setPets([]);
       setActiveTab('register');
     } catch (error) {
-      console.error('Erro ao sair:', error);
+      // Erro silencioso no logout
     }
   };
 
@@ -208,7 +191,7 @@ function App() {
         return;
       }
     } catch (error) {
-      console.error('Erro ao verificar confirmação de email:', error);
+      // Erro silencioso na verificação de email
     }
 
     try {
@@ -238,7 +221,6 @@ function App() {
       showMessage('Pet Cadastrado com Sucesso!', 'Pet cadastrado com sucesso!', 'success');
       setActiveTab('pets');
     } catch (error) {
-      console.error('Erro ao cadastrar:', error);
       showMessage('Erro ao Cadastrar Pet', 'Erro ao cadastrar pet. Tente novamente.', 'error');
       throw error;
     } finally {

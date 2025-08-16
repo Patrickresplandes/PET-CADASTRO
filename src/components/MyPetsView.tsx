@@ -29,7 +29,7 @@ const MyPetsView: React.FC<MyPetsViewProps> = ({ userId, onSwitchToRegister }) =
       setResident(userResident);
       setMyPets(userPets);
     } catch (error) {
-      console.error('Erro ao carregar dados do usuário:', error);
+      // Erro silencioso no carregamento de dados
     } finally {
       setLoading(false);
     }

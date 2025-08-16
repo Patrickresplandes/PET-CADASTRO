@@ -47,7 +47,7 @@ export const authService = {
         };
       }
     } catch (loginError) {
-      console.warn('Erro no login automático após cadastro:', loginError);
+      
     }
 
     return { user, needsConfirmation };

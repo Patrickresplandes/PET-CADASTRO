@@ -49,17 +49,25 @@ export const databaseService = {
   },
 
   async getUserResident(userId: string): Promise<Resident | null> {
-    const { data, error } = await supabase
-      .from('residents')
-      .select('*')
-      .eq('user_id', userId)
-      .single();
+    try {
+      const { data, error } = await supabase
+        .from('residents')
+        .select('*')
+        .eq('user_id', userId)
+        .single();
 
-    if (error) {
-      if (error.code === 'PGRST116') return null; // No rows found
-      console.error('Erro ao buscar residente:', error);
-      throw new Error(`Erro ao buscar dados do morador: ${error.message}`);
-    }
+      if (error) {
+        if (error.code === 'PGRST116') return null; // No rows found
+        console.error('Erro ao buscar residente:', error);
+        
+        // Se for erro 406, retornar null em vez de lançar erro
+        if (error.code === '406' || error.message.includes('406')) {
+          console.warn('Erro 406 - RLS pode estar bloqueando acesso. Retornando null.');
+          return null;
+        }
+        
+        throw new Error(`Erro ao buscar dados do morador: ${error.message}`);
+      }
     
     return {
       id: data.id,

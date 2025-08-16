@@ -57,7 +57,8 @@ export const databaseService = {
 
     if (error) {
       if (error.code === 'PGRST116') return null; // No rows found
-      throw error;
+      console.error('Erro ao buscar residente:', error);
+      throw new Error(`Erro ao buscar dados do morador: ${error.message}`);
     }
     
     return {

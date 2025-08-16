@@ -26,9 +26,11 @@ const AuthForm: React.FC<AuthFormProps> = ({ onLogin, onSignUp }) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
+    
+    // Reset states before starting
     setError(null);
     setSuccess(null);
+    setIsSubmitting(true);
 
     try {
       if (isLogin) {
@@ -66,9 +68,12 @@ const AuthForm: React.FC<AuthFormProps> = ({ onLogin, onSignUp }) => {
         } else if (error.message.includes('Too many requests')) {
           errorTitle = 'Muitas Tentativas';
           errorMessage = 'Muitas tentativas de login. Aguarde alguns minutos e tente novamente.';
-        } else if (error.message.includes('Network')) {
+        } else if (error.message.includes('Network') || error.message.includes('406')) {
           errorTitle = 'Erro de Conexão';
-          errorMessage = 'Erro de conexão. Verifique sua internet e tente novamente.';
+          errorMessage = 'Erro de conexão com o servidor. Verifique sua internet e tente novamente.';
+        } else if (error.message.includes('403') || error.message.includes('401')) {
+          errorTitle = 'Acesso Negado';
+          errorMessage = 'Você não tem permissão para acessar este recurso.';
         }
       }
 
